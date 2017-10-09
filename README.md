@@ -2,7 +2,7 @@ This is the build script for a custom live USB of Debian. It supports a wide var
 - "System", which has a debian install. The author also recommends you install any additional packages to the system partition.
 - "Config", which has all your changes after the install (home directory, configs, new installed packages)
 
-# Requirements
+## Requirements
 
 - an internet connection
 - sudo permissions (required to mount the image and to chown files as root in the chroot)
@@ -10,20 +10,20 @@ This is the build script for a custom live USB of Debian. It supports a wide var
 - fdisk
 - BIOS that supports GPT, which includes all modern computers (UEFI is supported but not required)
 
-# Installing
+## Installing
 
 1. Edit the install script to match the size of your USB. Make sure to go a little under if you're unsure.
 2. Run `sh bootstrap.sh`. The final printed line should be the location of the image (usually `/tmp/forget-base.img`).
 3. Copy this onto your usb. For example, `dd if=/tmp/forget-base.img of=/dev/sdx status=progress`
 
-# Build script features
+## Build script features
 
 - Single build file with few requirements
 - Single USB boots both on EFI and non-EFI systems
 - Generates a sparse image (only takes up the space of the files on disk, not the empty space in the filesystem)
 - Customizable (any size image you want, and any packages you want)
 
-# Overlay filesystems
+## Overlay filesystems
 
 An "overlay" filesystem is a combination of two filesystems. Ususally there is "lower" base filesystem which is essentially static. For example, in this live USB, this is where we store the entire base debian install. On top of that is a smaller and more frequently changed "upper" filesystem, which takes precedence. All changes to the running filesystem are written to the upper filesystem.
 
@@ -33,7 +33,7 @@ Common use cases for overlays include:
 - Tracking changes by looking at the upper filesystem (for example, the upper filesystem may consist only of newly installed packages, or of config file changes)
 - Separating "system" data and "user" data
 
-# USB Features
+## USB Features
 
 The USB has a "system" and a "config" partition. The "config" partition is initially empty. You can put whatever you want on the config partition of course--it's your system. The author keeps user and config data on the config partition, and installs new packages to the system partition.
 
@@ -59,16 +59,15 @@ The boot modes are:
 - **tmpfs/ro/ro Temporary+Persistent Overlay** Extended Live CD mode. Mounts the "config" and "system" partitions, keeping your persistent changes from other boots. But for this boot only, all changes will be stored in memory and lost on reboot.
 - **MemTest86** and **MemTest86+**. These are standard memory test tools. They're nice to have on every boot USB.
 
-# Known Bugs
+## Known Bugs
 
 - grub.cfg is not automatically generated. Make sure to update it whenever you upgrade the kernel, or your boot will fail.
 - The system is not especially secure--it's an unmodified debian install. There is only one user (root) with no password required. Also, ssh is enabled and automatically runs. If you harden the system (recommended), make sure to do it under the system partition--otherwise any "system" boots will ignore your changes.
 - When using this script from the finished system, partitions will auto-mount during the build process
 
-# Hacking
-## Adding boot options
+## Hacking
+### Adding boot options
 grub.cfg is completely hand-rolled because I think `update-grub` is a bad idea. But, that also means it's very readable. Take a look!
 
-## Live-booting other distros
+### Live-booting other distros
 Yeah, you'll have to hack on it. The boot process is not really debian-specific. The installation and setup on the other hand are. You should be able to adapt this to something similar for any distro with some kind of chroot bootstrapping process (an equivalent to 'debootstrap' on debian).
-
