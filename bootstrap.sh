@@ -30,7 +30,7 @@ if [ -z "$ARCH" ]; then
     ARCH=amd64
     which dkpg >/dev/null 2>/dev/null && ARCH=$(dpkg --print-archicture)
 fi
-DEBOOTSTRAP_VERSION=1.0.91
+DEBOOTSTRAP_VERSION=1.0.92
 DEBOOTSTRAP=/tmp/debootstrap
 export LOOP_DEVICE=${LOOP_DEVICE:-/dev/loop0}
 IMAGE_SIZE=8G
@@ -568,7 +568,7 @@ outside_chroot() {
     # Use debian's debootstrap into the partition
     DEBOOTSTRAP_VERSION=$DEBOOTSTRAP_VERSION debootstrap >${DEBOOTSTRAP} && chmod +x ${DEBOOTSTRAP}
     #if [ -z $CACHE_DIR ]; then
-        sudo ${DEBOOTSTRAP} --arch="${ARCH}" ${DEBIAN_VERSION} ${CHROOT} >/dev/null # It's just too noisy and has no config options
+        sudo PATH=/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin ${DEBOOTSTRAP} --arch="${ARCH}" ${DEBIAN_VERSION} ${CHROOT} >/dev/null # It's just too noisy and has no config options
     # Couldn't figure out how to get '--make-tarball' to work yet
     #else
     #    mkdir -p "${CACHE_DIR}"
