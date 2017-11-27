@@ -11,9 +11,10 @@ DISTRO=forget-base
 DEBIAN_VERSION=stretch
 MANDATORY_PACKAGES="e2fsprogs"
 BOOTSTRAP_PACKAGES="wget dosfstools"
-CLI_PACKAGES="autossh bsd-mailx build-essential deluge deluge-console deluged electrum fail2ban feh finch git gnupg iotop irssi libfaketime lxc lynx mdadm mplayer mutt nginx nmap openvpn parallel pv python qemu rsync sudo ssh tmux tor trickle vim-tiny w3m wpasupplicant zsh"
+CLI_PACKAGES="autossh bsd-mailx build-essential deluge deluge-console deluged electrum fail2ban feh finch git gnupg hddtemp iotop irssi libfaketime lxc lynx mdadm mplayer mutt nginx nmap openvpn parallel pv python qemu rsync smartmontools sudo ssh tmux tor trickle vim-tiny w3m wpasupplicant zsh"
 X_PACKAGES="awesome xorg xterm"
 PACKAGES="${MANDATORY_PACKAGES} ${BOOTSTRAP_PACKAGES} ${CLI_PACKAGES} ${X_PACKAGES}"
+export ROOT_PASSWORD=root
 export CHROOT=/tmp/${DISTRO}-chroot
 OVERLAY_MOUNT=/tmp/${DISTRO}-overlay
 MEMTEST_MOUNT=/tmp/${DISTRO}-memtest-mount
@@ -30,7 +31,7 @@ if [ -z "$ARCH" ]; then
     ARCH=amd64
     which dkpg >/dev/null 2>/dev/null && ARCH=$(dpkg --print-archicture)
 fi
-DEBOOTSTRAP_VERSION=1.0.91
+DEBOOTSTRAP_VERSION=1.0.92
 DEBOOTSTRAP=/tmp/debootstrap
 export LOOP_DEVICE=${LOOP_DEVICE:-/dev/loop0}
 IMAGE_SIZE=8G
@@ -73,7 +74,7 @@ menuentry 'rw/ro Persistent Overlay' {
 	insmod part_gpt
 	insmod ext2
 	echo	'Loading Linux 4.9.0-3-amd64 ...'
-	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=rw/ro ro  quiet
+	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=rw/ro quiet
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img-4.9.0-3-amd64
 }
@@ -83,7 +84,7 @@ menuentry 'tmpfs/ro Temporary Overlay' {
 	insmod part_gpt
 	insmod ext2
 	echo	'Loading Linux 4.9.0-3-amd64 ...'
-	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=mem/none/ro ro  quiet
+	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=mem/none/ro quiet
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img-4.9.0-3-amd64
 }
@@ -93,7 +94,7 @@ menuentry 'tmpfs/ro/ro Temporary + Persistent Overlay' {
 	insmod part_gpt
 	insmod ext2
 	echo	'Loading Linux 4.9.0-3-amd64 ...'
-	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=mem/ro/ro ro  quiet
+	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=mem/ro/ro quiet
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img-4.9.0-3-amd64
 }
@@ -103,7 +104,7 @@ menuentry 'memfs/memfs In-Memory Overlay' {
 	insmod part_gpt
 	insmod ext2
 	echo	'Loading Linux 4.9.0-3-amd64 ...'
-	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=mem/mem ro  quiet
+	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=mem/mem quiet
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img-4.9.0-3-amd64
 }
@@ -113,7 +114,7 @@ menuentry 'memfs In-memory System boot' {
 	insmod part_gpt
 	insmod ext2
 	echo	'Loading Linux 4.9.0-3-amd64 ...'
-	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=none/mem ro  quiet
+	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=none/mem quiet
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img-4.9.0-3-amd64
 }
@@ -123,7 +124,7 @@ menuentry 'memfs Flat memory boot (of rw/ro overlay)' {
 	insmod part_gpt
 	insmod ext2
 	echo	'Loading Linux 4.9.0-3-amd64 ...'
-	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=mem ro  quiet
+	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=mem quiet
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img-4.9.0-3-amd64
 }
@@ -133,7 +134,7 @@ menuentry 'rw System Maintenance boot' {
 	insmod part_gpt
 	insmod ext2
 	echo	'Loading Linux 4.9.0-3-amd64 ...'
-	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=none/rw ro  quiet
+	linux	/boot/vmlinuz-4.9.0-3-amd64 root=PARTLABEL=system net.ifnames=0 overlaytype=none/rw quiet
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img-4.9.0-3-amd64
 }
@@ -568,7 +569,7 @@ outside_chroot() {
     # Use debian's debootstrap into the partition
     DEBOOTSTRAP_VERSION=$DEBOOTSTRAP_VERSION debootstrap >${DEBOOTSTRAP} && chmod +x ${DEBOOTSTRAP}
     #if [ -z $CACHE_DIR ]; then
-        sudo ${DEBOOTSTRAP} --arch="${ARCH}" ${DEBIAN_VERSION} ${CHROOT} >/dev/null # It's just too noisy and has no config options
+        sudo PATH=/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin ${DEBOOTSTRAP} --arch="${ARCH}" ${DEBIAN_VERSION} ${CHROOT} >/dev/null # It's just too noisy and has no config options
     # Couldn't figure out how to get '--make-tarball' to work yet
     #else
     #    mkdir -p "${CACHE_DIR}"
@@ -644,6 +645,9 @@ EOF
 
     # Set up directories needed by overlay
     mkdir -p /media/{lower,mem,rw}
+
+    # Set up root
+    echo "root:${ROOT_PASSWD}"|chpasswd
 }
 
 if [ "$1" = "inside_chroot" ]; then
