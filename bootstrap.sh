@@ -632,7 +632,9 @@ EOF
 
     # Install custom initramfs
     overlay_hook >/etc/initramfs-tools/scripts/init-bottom/overlay
+    chmod +x /etc/initramfs-tools/scripts/init-bottom/overlay
     media_hook >/etc/initramfs-tools/hooks/media
+    chmod +x /etc/initramfs-tools/hooks/media
     update-initramfs -u -k all
 
     # Install custom grub boot script and disable grub boot
